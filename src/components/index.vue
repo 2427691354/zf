@@ -149,13 +149,22 @@
             <div class="boxfoot"></div>
           </div>
           <div class="boxall" style="height: 2.85rem;">
-            <div class="alltitle">防疫小知识</div>
+            <div class="alltitle">战“疫”频道</div>
             <div class="allnav">
-              <el-carousel :interval="2000" type="card" height="2rem">
-                <el-carousel-item v-for="item in this.img_list2" :key="item">
-                  <img :src="'/static/img/' + item+ '.jpg'" />
-                </el-carousel-item>
-              </el-carousel>
+              <!-- <div id="word_zs"></div> -->
+              <Tabs v-model="activename" type="card">
+                <TabPane label="诊　断" name="name1" id="resou"></TabPane>
+                <TabPane label="知　识" name="name2" id="zhishi"></TabPane>
+                <TabPane label="辟　谣" name="name3" class="piyao">
+                  <ul>
+                    <li
+                      class="piyao_list"
+                      v-for="item in this.piyao"
+                      :key="item.title"
+                    >【谣】{{item.title}}</li>
+                  </ul>
+                </TabPane>
+              </Tabs>
             </div>
 
             <div class="boxfoot"></div>
@@ -190,7 +199,7 @@ export default {
         stuinJiang: 0
       },
       //
-      img_list2: ["lb1", "lb2", "lb3", "lb4", "lb5"],
+      // img_list2: ["lb1", "lb2", "lb3", "lb4", "lb5"],
       //轮播图图片
       img_list: [],
       // 图片父容器高度
@@ -258,9 +267,9 @@ export default {
           fullscreenToggle: true //全屏按钮
         }
       },
-      resou: null,
-      zhishi: null,
-      piyao: null,
+      resou: [],
+      zhishi: [],
+      piyao: [],
       //
       //学生总人数
       data_alllist: [],
@@ -278,9 +287,6 @@ export default {
       //重点关注学生信息
       stuInfo: [],
 
-      noMask: [],
-      noMaskCount: null,
-
       //学生在苏人数
       Num_suzhou: [],
       //学生江苏人数
@@ -291,7 +297,10 @@ export default {
       //省份
       provinces: [],
       //人数
-      pronum: []
+      pronum: [],
+      Num_geli: [],
+      Num_fashao: [],
+      days2: []
     };
   },
   components: {
@@ -306,13 +315,9 @@ export default {
     //表格自动滚动
     this.play();
     // 获取未带口罩的图片
-    this.noMaskList();
+    // this.noMaskList();
   },
   mounted() {
-    //课表
-    // this.drawKebiao();
-    //值班老师
-    this.initzhiban();
     this.$refs.videoPlayer.player.play();
     // this.$refs.videoPlayer1.player.play();
     // 宏观统计 总人数、隔离人数、发烧人数
@@ -328,7 +333,6 @@ export default {
     this.initwordcould2();
     this.initwordcould3();
     this.initHuan();
-
     //学生各省物理分布人数
     this.allNum();
     //轮播图
@@ -337,105 +341,15 @@ export default {
     this.focusStu();
     // this.gundong();
     //选项卡自动播放
-
     this.tabxunhuan();
     //隔离人数折线图
     this.suzhouStu();
     //发烧人数折线图
     this.eachpro();
-
-    this.totalNum();
+    //隔离、发烧人数趋势
+    this.trendNum();
   },
   methods: {
-    initzhiban() {
-      var self = this;
-      self.$http
-        .get(this.baseUrl + "/duty/dutyteacher")
-        .then(function(response) {
-          self.zhiban = response.data;
-        })
-        .catch(function(error) {
-          console.log(error);
-          // window.location.reload();
-        });
-    },
-    handleCommand1(command) {
-      this.kebiaodata = eval("this." + command);
-      // if(command = "rj18c2")
-      //   this.class = "软件18C2";
-      switch (command) {
-        case "rj18c2":
-          this.class = "软件18C2";
-          break;
-        case "rj18c1":
-          this.class = "软件18C1";
-          break;
-        case "dsj18c1":
-          this.class = "大数据18C1";
-          break;
-        case "dl18c1":
-          this.class = "动联18C1";
-          break;
-        case "wl18c1":
-          this.class = "网络18C1";
-          break;
-        case "wl18d1":
-          this.class = "网络18D1";
-          break;
-        case "xg18h1":
-          this.class = "信管18H1";
-          break;
-        case "xx18d1":
-          this.class = "信息18D1";
-          break;
-        case "yjs18c1":
-          this.class = "云计算18C1";
-          break;
-      }
-      this.drawKebiao();
-    },
-    handleCommand2(command) {
-      this.kebiaodata = eval("this." + command);
-      switch (command) {
-        case "rj19c2":
-          this.class = "软件19C2";
-          break;
-        case "rj19c1":
-          this.class = "软件16C1";
-          break;
-        case "dsj19c1":
-          this.class = "大数据19C1";
-          break;
-        case "dl19c1":
-          this.class = "动联19C1";
-          break;
-        case "wl19c1":
-          this.class = "网络19C1";
-          break;
-        case "wl19d1":
-          this.class = "网络19D1";
-          break;
-        case "xx19d1":
-          this.class = "信息19D1";
-          break;
-        case "xx19c1":
-          this.class = "信息19C1";
-          break;
-        case "yjs19c1":
-          this.class = "云计算19C1";
-          break;
-        case "yjs19c2":
-          this.class = "云计算19C2";
-          break;
-        case "jqr19c1":
-          this.class = "机器人19C1";
-          break;
-        case "jqr19c2":
-          this.class = "机器人19C2";
-          break;
-      }
-      this.drawKebiao();
-    },
     tabchange() {
       if (this.activename == "name1") {
         this.activename = "name2";
@@ -446,16 +360,10 @@ export default {
       }
     },
     tabxunhuan() {
-      setInterval(this.tabchange, 5000);
+      setInterval(this.tabchange, 8000);
     },
     tabclear() {
       clearInterval(this.tabxunhuan);
-    },
-    handleClick(tab, event) {
-      // console.log(tab, event);
-    },
-    handleClick2(row) {
-      alert(row);
     },
     setSize: function() {
       // 通过浏览器宽度(图片宽度)计算高度
@@ -481,42 +389,41 @@ export default {
     drawHuan() {
       var huan = echarts.init(document.getElementById("fashao"));
       const option = {
-        // color: ["#23649e", "#2e7bad", "#1dc499", "#4da7c1", "#65b5c2"],
         color: ["#1ABDE6", "#EE6911", "#EE1111"],
         data: ["低热", "中热", "高热"],
         tooltip: {
           trigger: "item",
           formatter: "{a} <br/>{b}: {c} ({d}%)"
         },
-        grid: {
-          left: 0, // right: 0,
-          bottom: 0,
-          top: 0,
-          containLabel: true
-        },
+        // grid: {
+        //   left: 'center', // right: 0,
+        //   bottom: 0,
+        //   top: 0,
+        //   containLabel: false
+        // },
         legend: {
           orient: "vertical",
           top: "15%",
           bottom: "15%",
-          right: "10%",
+          right: "25%",
           textStyle: {
             color: "rgba(255, 255, 255, 0.7)",
-            fontSize: "10"
+            fontSize: '0.01rem'
           },
           icon: "circle",
-          itemWidth: 8, // 设置宽度
-          itemHeight: 8, // 设置高度
+          itemWidth: 6, // 设置宽度
+          itemHeight: 6, // 设置高度
           itemGap: 1 // 设置间距
         },
         series: [
           // 主要展示层的
           {
             radius: ["55%", "75%"],
-            center: ["28%", "50%"],
+            center: ["40%", "50%"],
             type: "pie",
             label: {
               normal: {
-                show: true,
+                show: false,
                 position: "outside"
               },
               emphasis: {
@@ -529,7 +436,7 @@ export default {
             },
             labelLine: {
               normal: {
-                show: true,
+                show: false,
                 length: 20,
                 length2: 35
               },
@@ -539,29 +446,6 @@ export default {
             },
             name: "体温等级比例",
             data: [
-              // {
-              //   value: this.normal,
-              //   name: "正常",
-              //   label: {
-              //     normal: {
-              //       show: false,
-              //       formatter: "正常{d}%",
-              //       position: 'center',
-              //       textStyle: {
-              //         color: "#fff",
-
-              //         fontSize: 10
-              //       }
-              //     },
-              //     emphasis: {
-              //       show: true,
-              //       // textStyle: {
-              //       //     fontSize: '30',
-              //       //     fontWeight: 'bold'
-              //       // }
-              //   }
-              //   }
-              // },
               {
                 value: this.lowfever,
                 name: "低热",
@@ -572,16 +456,11 @@ export default {
                     position: "center",
                     textStyle: {
                       color: "#fff",
-
                       fontSize: 10
                     }
                   },
                   emphasis: {
                     show: true
-                    // textStyle: {
-                    //     fontSize: '30',
-                    //     fontWeight: 'bold'
-                    // }
                   }
                 }
               },
@@ -628,7 +507,7 @@ export default {
           }, // 边框的设置
           {
             radius: ["75%", "73%"],
-            center: ["28%", "50%"],
+            center: ["40%", "50%"],
             type: "pie",
             hoverAnimation: false,
             label: {
@@ -713,13 +592,12 @@ export default {
           res.map((item, index) => {
             newres.push(
               Object.assign({}, item, {
-                value: Math.round(Math.random() * 10000)
+                value: Math.round(Math.random() * 100)
               })
             );
           });
 
           self.resou = newres.slice(0, 50);
-
           self.wordCould1();
         })
         .catch(function(error) {
@@ -743,13 +621,12 @@ export default {
           res.map((item, index) => {
             newres.push(
               Object.assign({}, item, {
-                value: Math.round(Math.random() * 10000)
+                value: Math.round(Math.random() * 100)
               })
             );
           });
 
           self.zhishi = newres.slice(0, 50);
-
           self.wordCould2();
         })
         .catch(function(error) {
@@ -763,9 +640,21 @@ export default {
         .get(this.baseUrl + "/prevent/selectRumorTitle")
         .then(function(response) {
           var res = response.data;
-
-          self.piyao = res.slice(0, 20);
-
+          // var newres = [];
+          // res = JSON.parse(JSON.stringify(res).replace(/title/g, "name"));
+          // res = res.map(obj => {
+          //   return {
+          //     name: obj.name
+          //   };
+          // });
+          // res.map((item, index) => {
+          //   newres.push(
+          //     Object.assign({}, item, {
+          //       value: Math.round(Math.random() * 100)
+          //     })
+          //   );
+          // });
+          self.piyao = res;
           // self.wordCould3();
         })
         .catch(function(error) {
@@ -774,166 +663,176 @@ export default {
         });
     },
     wordCould1() {
-      var wordcould = echarts.init(document.getElementById("resou"));
-      const option = {
-        // backgroundColor: "#fff",
-        // tooltip: {
-        //   pointFormat: "{series.name}: <b>{point.percentage:.1f}%</b>"
-        // },
+      var wc = echarts.init(document.getElementById("resou"));
+      var option = {
         series: [
           {
             type: "wordCloud",
-            //用来调整词之间的距离
-            gridSize: 10,
-            //用来调整字的大小范围
-            // Text size range which the value in data will be mapped to.
-            // Default to have minimum 12px and maximum 60px size.
-            sizeRange: [14, 60],
-            // Text rotation range and step in degree. Text will be rotated randomly in range [-90,                                                                             90] by rotationStep 45
-            //用来调整词的旋转方向，，[0,0]--代表着没有角度，也就是词为水平方向，需要设置角度参考注释内容
-            // rotationRange: [-45, 0, 45, 90],
-            // rotationRange: [ 0,90],
-            rotationRange: [0, 0],
-            //随机生成字体颜色
-            // maskImage: maskImage,
+            shape: "circle",
+            //maskImage: maskImage,
+            left: "center",
+            top: "10%",
+            width: "100%",
+            height: "80%",
+            right: null,
+            bottom: null,
+            sizeRange: [5, 30],
+            rotationRange: [-45, 70],
+            autoSize: {
+              enable: true,
+              minSize: 6
+            },
+            tooltip: {
+              show: true,
+              trigger: "item",
+              formatter: "name"
+            },
+            textPadding: 0,
+            // rotationStep: 45,
+            // gridSize: 8,
+            drawOutOfBound: false,
             textStyle: {
               normal: {
+                fontFamily: "sans-serif",
+                fontWeight: "bold",
+                // Color can be a callback function or a color string
                 color: function() {
+                  // Random color
                   return (
                     "rgb(" +
-                    (Math.round(Math.random() * (240 - 100)) + 100) +
-                    ", " +
-                    (Math.round(Math.random() * (240 - 100)) + 100) +
-                    ", " +
-                    (Math.round(Math.random() * (240 - 100)) + 100) +
+                    [
+                      Math.round(Math.random() * 256),
+                      Math.round(Math.random() * 256),
+                      Math.round(Math.random() * 256)
+                    ].join(",") +
                     ")"
                   );
                 }
               }
             },
-            //位置相关设置
-            // Folllowing left/top/width/height/right/bottom are used for positioning the word cloud
-            // Default to be put in the center and has 75% x 80% size.
-            left: "center",
-            top: "center",
-            right: null,
-            bottom: null,
-            width: "100%",
-            height: "100%",
-            //数据
             data: this.resou
           }
         ]
       };
-      wordcould.setOption(option);
+      wc.setOption(option);
+
+      window.addEventListener("resize", function() {
+        wc.resize();
+      });
     },
     wordCould2() {
-      var wordcould = echarts.init(document.getElementById("zhishi"));
-      const option = {
-        // backgroundColor: "#fff",
-        // tooltip: {
-        //   pointFormat: "{series.name}: <b>{point.percentage:.1f}%</b>"
-        // },
+      var wc = echarts.init(document.getElementById("zhishi"));
+      var option = {
         series: [
           {
             type: "wordCloud",
-            //用来调整词之间的距离
-            gridSize: 10,
-            //用来调整字的大小范围
-            // Text size range which the value in data will be mapped to.
-            // Default to have minimum 12px and maximum 60px size.
-            sizeRange: [14, 60],
-            // Text rotation range and step in degree. Text will be rotated randomly in range [-90,                                                                             90] by rotationStep 45
-            //用来调整词的旋转方向，，[0,0]--代表着没有角度，也就是词为水平方向，需要设置角度参考注释内容
-            // rotationRange: [-45, 0, 45, 90],
-            // rotationRange: [ 0,90],
-            rotationRange: [0, 0],
-            //随机生成字体颜色
-            // maskImage: maskImage,
+            shape: "circle",
+            //maskImage: maskImage,
+            left: "10%",
+            top: "center",
+            width: "100%",
+            height: "80%",
+            right: null,
+            bottom: null,
+            sizeRange: [5, 30],
+            rotationRange: [-45, 60],
+            autoSize: {
+              enable: true,
+              minSize: 6
+            },
+            tooltip: {
+              show: true,
+              trigger: "item",
+              formatter: "name"
+            },
+            textPadding: 0,
+            // rotationStep: 45,
+            // gridSize: 8,
+            drawOutOfBound: false,
             textStyle: {
               normal: {
+                fontFamily: "sans-serif",
+                fontWeight: "bold",
+                // Color can be a callback function or a color string
                 color: function() {
+                  // Random color
                   return (
                     "rgb(" +
-                    (Math.round(Math.random() * (240 - 100)) + 100) +
-                    ", " +
-                    (Math.round(Math.random() * (240 - 100)) + 100) +
-                    ", " +
-                    (Math.round(Math.random() * (240 - 100)) + 100) +
+                    [
+                      Math.round(Math.random() * 256),
+                      Math.round(Math.random() * 256),
+                      Math.round(Math.random() * 256)
+                    ].join(",") +
                     ")"
                   );
                 }
               }
             },
-            //位置相关设置
-            // Folllowing left/top/width/height/right/bottom are used for positioning the word cloud
-            // Default to be put in the center and has 75% x 80% size.
-            left: "center",
-            top: "center",
-            right: null,
-            bottom: null,
-            width: "100%",
-            height: "100%",
-            //数据
             data: this.zhishi
           }
         ]
       };
-      wordcould.setOption(option);
+      wc.setOption(option);
+      window.addEventListener("resize", function() {
+        wc.resize();
+      });
     },
     wordCould3() {
       var wordcould = echarts.init(document.getElementById("piyao"));
       const option = {
-        // backgroundColor: "#fff",
-        // tooltip: {
-        //   pointFormat: "{series.name}: <b>{point.percentage:.1f}%</b>"
-        // },
         series: [
           {
             type: "wordCloud",
-            //用来调整词之间的距离
-            gridSize: 10,
-            //用来调整字的大小范围
-            // Text size range which the value in data will be mapped to.
-            // Default to have minimum 12px and maximum 60px size.
-            sizeRange: [14, 60],
-            // Text rotation range and step in degree. Text will be rotated randomly in range [-90,                                                                             90] by rotationStep 45
-            //用来调整词的旋转方向，，[0,0]--代表着没有角度，也就是词为水平方向，需要设置角度参考注释内容
-            // rotationRange: [-45, 0, 45, 90],
-            // rotationRange: [ 0,90],
-            rotationRange: [0, 0],
-            //随机生成字体颜色
-            // maskImage: maskImage,
+            shape: "circle",
+            //maskImage: maskImage,
+            left: "center",
+            top: "center",
+            width: "100%",
+            height: "80%",
+            right: null,
+            bottom: null,
+            sizeRange: [10, 30],
+            rotationRange: [-45, 70],
+            autoSize: {
+              enable: true,
+              minSize: 6
+            },
+            tooltip: {
+              show: true,
+              trigger: "item",
+              formatter: "name"
+            },
+            textPadding: 0,
+            // rotationStep: 45,
+            // gridSize: 8,
+            drawOutOfBound: false,
             textStyle: {
               normal: {
+                fontFamily: "sans-serif",
+                fontWeight: "bold",
+                // Color can be a callback function or a color string
                 color: function() {
+                  // Random color
                   return (
                     "rgb(" +
-                    (Math.round(Math.random() * (240 - 100)) + 100) +
-                    ", " +
-                    (Math.round(Math.random() * (240 - 100)) + 100) +
-                    ", " +
-                    (Math.round(Math.random() * (240 - 100)) + 100) +
+                    [
+                      Math.round(Math.random() * 256),
+                      Math.round(Math.random() * 256),
+                      Math.round(Math.random() * 256)
+                    ].join(",") +
                     ")"
                   );
                 }
               }
             },
-            //位置相关设置
-            // Folllowing left/top/width/height/right/bottom are used for positioning the word cloud
-            // Default to be put in the center and has 75% x 80% size.
-            left: "center",
-            top: "center",
-            right: null,
-            bottom: null,
-            width: "100%",
-            height: "100%",
-            //数据
             data: this.piyao
           }
         ]
       };
       wordcould.setOption(option);
+      window.addEventListener("resize", function() {
+        wordcould.resize();
+      });
     },
     allNum() {
       var self = this;
@@ -1223,7 +1122,7 @@ export default {
           calculable: true, //是否显示拖拽用的手柄（手柄能拖拽调整选中范围）。
           seriesIndex: [0], //不会覆盖其他type颜色
           inRange: {
-            color: ["#CCFFFF","#66CCCC","#009999" ] //颜色
+            color: ["#CCFFFF", "#66CCCC", "#009999"] //颜色
           },
           textStyle: {
             color: "#fff"
@@ -1377,7 +1276,6 @@ export default {
         ]
       };
       myChart.setOption(option);
-      console.log(convertData(this.keyarea));
       var index = 0;
       var myTime = setInterval(function() {
         myChart.dispatchAction({
@@ -1848,20 +1746,6 @@ export default {
         MyMar = setInterval(Marquee, speed);
       };
     },
-    noMaskList() {
-      var self = this;
-      self.$http
-        .get(this.baseUrl + "/pictures/selectByType?type=3")
-        .then(function(response) {
-          var res = response.data;
-          self.noMask = res;
-          self.noMaskCount = res.length;
-          self.gundong();
-        })
-        .catch(function(error) {
-          console.log(error);
-        });
-    },
     suzhouStu() {
       var self = this;
       self.$http
@@ -1913,27 +1797,11 @@ export default {
           containLabel: true
         },
         legend: {
-          //图例组件，颜色和名字
-          right: 10,
-          top: "5%",
-          itemGap: 16,
-          itemWidth: 18,
-          itemHeight: 10,
-          data: [
-            {
-              name: "苏州人数趋势"
-              //icon:'image://../wwwroot/js/url2.png', //路径
-            },
-            {
-              name: "江苏人数趋势"
-            }
-          ],
+          data: ["苏州人数趋势", "江苏人数趋势"],
           textStyle: {
-            color: "#fff",
-            fontStyle: "normal",
-            fontFamily: "微软雅黑",
-            fontSize: "150%"
-          }
+            color: "#B4B4B4"
+          },
+          top: "1%"
         },
         xAxis: [
           {
@@ -1945,7 +1813,7 @@ export default {
               interval: 0, //设置为 1，表示『隔一个标签显示一个标签』
               margin: 15,
               textStyle: {
-                color: "#1bb4f6",
+                color: "#03C5BC",
                 fontStyle: "normal",
                 fontFamily: "微软雅黑",
                 fontSize: "150%"
@@ -1958,7 +1826,7 @@ export default {
             axisLine: {
               //坐标轴轴线相关设置
               lineStyle: {
-                color: "#1bb4f6"
+                color: "#03C5BC"
                 //	opacity:0.5
               }
             },
@@ -1970,56 +1838,37 @@ export default {
         ],
         yAxis: [
           {
-            type: "value",
-            // name: "Nm³",
-            splitNumber: 5,
-            axisLabel: {
-              textStyle: {
-                color: "#1bb4f6",
-                fontStyle: "normal",
-                fontFamily: "微软雅黑",
-                fontSize: "150%"
-              }
-            },
+            splitLine: { show: false },
             axisLine: {
-              show: true,
               lineStyle: {
-                color: "#1bb4f6"
-                //opacity:0.5
+                color: "#03C5BC"
               }
             },
-            axisTick: {
-              show: true
-            },
-            splitLine: {
-              show: true,
+
+            axisLabel: {
+              formatter: "{value} "
+            }
+          },
+          {
+            splitLine: { show: false },
+            axisLine: {
               lineStyle: {
-                color: ["#333"],
-                opacity: 0.2
+                color: "#03C5BC"
               }
+            },
+            axisLabel: {
+              formatter: "{value} "
             }
           }
         ],
         series: [
           {
             name: "苏州人数趋势",
-            type: "bar",
-            data: this.Num_suzhou,
-            barWidth: 15,
-            barGap: 0, //柱间距离
-            label: {
-              //图形上的文本标签
-              normal: {
-                show: false, //柱状上方是否显示数据
-                position: "top",
-                textStyle: {
-                  color: "#a8aab0",
-                  fontStyle: "normal",
-                  fontFamily: "微软雅黑",
-                  fontSize: "150%"
-                }
-              }
-            },
+            type: "line",
+            smooth: true,
+            showAllSymbol: true,
+            symbol: "emptyCircle",
+            symbolSize: 8,
             itemStyle: {
               //图形样式
               normal: {
@@ -2050,13 +1899,15 @@ export default {
                   false
                 )
               }
-            }
+            },
+            data: this.Num_suzhou
           },
           {
             name: "江苏人数趋势",
             type: "bar",
             data: this.Num_js,
-            barWidth: 15,
+            yAxisIndex: 1,
+            barWidth: 10,
             barGap: 0.5, //柱间距离
             label: {
               //图形上的文本标签
@@ -2115,293 +1966,126 @@ export default {
         myChart.resize();
       });
     },
+    trendNum() {
+      var self = this;
+      self.$http
+        .get(this.baseUrl + "/dayrpt/getFeverTrend")
+        .then(function(response) {
+          var res = response.data;
+          for (var i = 0; i < res.length; i++) {
+            self.Num_fashao.push(res[i].stuFeverTrend);
+            self.days2.push(res[i].time.substring(6) + "日");
+          }
+          console.log(self.Num_fashao);
+          self.totalNum();
+        });
+
+      self.$http
+        .get(this.baseUrl + "/dayrpt/getStuIsolated")
+        .then(function(response) {
+          var res = response.data;
+          for (var i = 0; i < res.length; i++) {
+            self.Num_geli.push(res[i].stuFeverTrend);
+          }
+          self.totalNum();
+        });
+    },
     totalNum() {
       var myChart = this.$echarts.init(document.getElementById("allNum"));
+      // Generate data
       var option = {
+        tooltip: {
+          trigger: "axis",
+          backgroundColor: "rgba(255,255,255,0.1)",
+          axisPointer: {
+            type: "shadow",
+            label: {
+              show: true,
+              backgroundColor: "#7B7DDC"
+            }
+          }
+        },
+        legend: {
+          data: ["隔离人数趋势", "发烧人数趋势"],
+          textStyle: {
+            color: "#B4B4B4"
+          },
+          top: "1%"
+        },
+        grid: {
+          left: "10%",
+          right: "5%",
+          top: "10%",
+          bottom: "1%",
+          containLabel: true
+        },
+        xAxis: {
+          data: this.days2,
+          axisLine: {
+            lineStyle: {
+              color: "#03C5BC"
+            }
+          },
+          axisTick: {
+            show: false
+          }
+        },
+        yAxis: [
+          {
+            splitLine: { show: false },
+            axisLine: {
+              lineStyle: {
+                color: "#03C5BC"
+              }
+            },
+
+            axisLabel: {
+              formatter: "{value} "
+            }
+          },
+          {
+            splitLine: { show: false },
+            axisLine: {
+              lineStyle: {
+                color: "#03C5BC"
+              }
+            },
+            axisLabel: {
+              formatter: "{value} "
+            }
+          }
+        ],
         series: [
           {
-            name: "第一个圆环",
-            type: "pie",
-            clockWise: false,
-            radius: ["30%", "40%"],
+            name: "隔离人数趋势",
+            type: "line",
+            smooth: true,
+            showAllSymbol: true,
+            symbol: "emptyCircle",
+            symbolSize: 8,
+            yAxisIndex: 1,
             itemStyle: {
               normal: {
-                label: {
-                  show: false
-                },
-                labelLine: {
-                  show: false
-                },
-                shadowBlur: 0,
-                shadowColor: "#203665"
+                color: "#F02FC2"
               }
             },
-            hoverAnimation: false,
-            center: ["30%", "30%"],
-            data: [
-              {
-                value: this.statistics.sumIsolated,
-                label: {
-                  normal: {
-                    rich: {
-                      a: {
-                        color: "#3a7ad5",
-                        align: "center",
-                        fontSize: "150%",
-                        fontWeight: "bold"
-                      },
-                      b: {
-                        color: "#fff",
-                        align: "center",
-                        fontSize: "150%"
-                      }
-                    },
-                    formatter: function(params) {
-                      return "{b|隔离人数}\n\n" + "{a|" + params.value + "个}";
-                    },
-                    position: "center",
-                    show: true,
-                    textStyle: {
-                      fontSize: "14",
-                      fontWeight: "normal",
-                      color: "#fff"
-                    }
-                  }
-                },
-                itemStyle: {
-                  normal: {
-                    color: "#2c6cc4",
-                    shadowColor: "#2c6cc4",
-                    shadowBlur: 0
-                  }
-                }
-              },
-              {
-                value: 75,
-                name: "invisible",
-                itemStyle: {
-                  normal: {
-                    color: "#24375c"
-                  },
-                  emphasis: {
-                    color: "#24375c"
-                  }
-                }
-              }
-            ]
+            data: this.Num_geli
           },
+
           {
-            name: "第二个圆环",
-            type: "pie",
-            clockWise: false,
-            radius: ["30%", "40%"],
+            name: "发烧人数趋势",
+            type: "bar",
+            barWidth: 10,
             itemStyle: {
               normal: {
-                label: {
-                  show: false
-                },
-                labelLine: {
-                  show: false
-                },
-                shadowBlur: 0,
-                shadowColor: "#203665"
+                barBorderRadius: 5,
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                  { offset: 0, color: "#956FD4" },
+                  { offset: 1, color: "#3EACE5" }
+                ])
               }
             },
-            hoverAnimation: false,
-            center: ["70%", "30%"],
-            data: [
-              {
-                value: this.statistics.sumHever,
-                label: {
-                  normal: {
-                    rich: {
-                      a: {
-                        color: "#d03e93",
-                        align: "center",
-                        fontSize: "150%",
-                        fontWeight: "bold"
-                      },
-                      b: {
-                        color: "#fff",
-                        align: "center",
-                        fontSize: "150%"
-                      }
-                    },
-                    formatter: function(params) {
-                      return "{b|发烧人数}\n\n" + "{a|" + params.value + "个}";
-                    },
-                    position: "center",
-                    show: true,
-                    textStyle: {
-                      fontSize: "14",
-                      fontWeight: "normal",
-                      color: "#fff"
-                    }
-                  }
-                },
-                itemStyle: {
-                  normal: {
-                    color: "#ef45ac",
-                    shadowColor: "#ef45ac",
-                    shadowBlur: 0
-                  }
-                }
-              },
-              {
-                value: 50,
-                name: "invisible",
-                itemStyle: {
-                  normal: {
-                    color: "#412a4e"
-                  },
-                  emphasis: {
-                    color: "#412a4e"
-                  }
-                }
-              }
-            ]
-          },
-          {
-            name: "第三个圆环",
-            type: "pie",
-            clockWise: false,
-            radius: ["30%", "40%"],
-            itemStyle: {
-              normal: {
-                label: {
-                  show: false
-                },
-                labelLine: {
-                  show: false
-                },
-                shadowBlur: 0,
-                shadowColor: "#203665"
-              }
-            },
-            hoverAnimation: false,
-            center: ["30%", "75%"],
-            data: [
-              {
-                value: this.statistics.sumAll,
-                label: {
-                  normal: {
-                    rich: {
-                      a: {
-                        color: "#603dd0",
-                        align: "center",
-                        fontSize: "150%",
-                        fontWeight: "bold"
-                      },
-                      b: {
-                        color: "#fff",
-                        align: "center",
-                        fontSize: "150%"
-                      }
-                    },
-                    formatter: function(params) {
-                      return "{b|上报人数}\n\n" + "{a|" + params.value + "个}";
-                    },
-                    position: "center",
-                    show: true,
-                    textStyle: {
-                      fontSize: "14",
-                      fontWeight: "normal",
-                      color: "#fff"
-                    }
-                  }
-                },
-                itemStyle: {
-                  normal: {
-                    color: "#613fd1",
-                    shadowColor: "#613fd1",
-                    shadowBlur: 0
-                  }
-                }
-              },
-              {
-                value: 25,
-                name: "invisible",
-                itemStyle: {
-                  normal: {
-                    color: "#453284"
-                  },
-                  emphasis: {
-                    color: "#453284"
-                  }
-                }
-              }
-            ]
-          },
-          {
-            name: "第四个圆环",
-            type: "pie",
-            clockWise: false,
-            radius: ["30%", "40%"],
-            itemStyle: {
-              normal: {
-                label: {
-                  show: false
-                },
-                labelLine: {
-                  show: false
-                },
-                shadowBlur: 0,
-                shadowColor: "#203665"
-              }
-            },
-            hoverAnimation: false,
-            center: ["70%", "75%"],
-            data: [
-              {
-                value: 0,
-                label: {
-                  normal: {
-                    rich: {
-                      a: {
-                        color: "#603dd0",
-                        align: "center",
-                        fontSize: "150%",
-                        fontWeight: "bold"
-                      },
-                      b: {
-                        color: "#fff",
-                        align: "center",
-                        fontSize: "150%"
-                      }
-                    },
-                    formatter: function(params) {
-                      return "{b|缺报人数}\n\n" + "{a|" + params.value + "个}";
-                    },
-                    position: "center",
-                    show: true,
-                    textStyle: {
-                      fontSize: "14",
-                      fontWeight: "normal",
-                      color: "#fff"
-                    }
-                  }
-                },
-                itemStyle: {
-                  normal: {
-                    color: "#00FEE3",
-                    shadowColor: "#00FEE3",
-                    shadowBlur: 0
-                  }
-                }
-              },
-              {
-                value: 25,
-                name: "invisible",
-                itemStyle: {
-                  normal: {
-                    color: "#1882B2"
-                  },
-                  emphasis: {
-                    color: "#1882B2"
-                  }
-                }
-              }
-            ]
+            data: this.Num_fashao
           }
         ]
       };
@@ -2427,11 +2111,11 @@ export default {
 }
 
 .ivu-tabs.ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-tab {
-  width: 55.8%;
-  font-size: 0.183rem;
+  width: 40%;
+  font-size: 0.15rem;
   text-align: center;
   border: 1px solid rgba(25, 186, 139, 0.17);
-  box-shadow: 0px 0px 10px rgba(25, 140, 186, 0.6) inset;
+  // box-shadow: 0px 0px 10px rgba(25, 140, 186, 0.6) inset;
   background: rgba(255, 255, 255, 0.08) url("../assets/images/line.png");
 }
 
@@ -2443,13 +2127,9 @@ export default {
   height: calc(87% - 15px);
 }
 .ivu-tabs {
-  height: 93%;
-}
-#resou {
-  width: 100%;
   height: 100%;
 }
-#piyao {
+#resou {
   width: 100%;
   height: 100%;
 }
@@ -2457,12 +2137,6 @@ export default {
   width: 100%;
   height: 100%;
 }
-#echart6 {
-  width: 100%;
-  padding: 0.1rem;
-  height: 2.3rem;
-}
-
 .el-table__header {
   padding: 0;
   height: 5%;
@@ -2476,7 +2150,6 @@ export default {
 }
 #demo {
   overflow: hidden;
-
   width: 100%;
   height: 100%;
 }
@@ -2503,7 +2176,7 @@ export default {
   height: 100%;
 }
 .piyao {
-  height: 100%;
+  height: 80%;
   width: 100%;
   overflow-y: hidden;
 }
@@ -2517,18 +2190,17 @@ export default {
 .piyao_list {
   height: calc(100% / 8);
   width: 100%;
-  padding-left: 5px;
-  font-size: 0.17rem;
+  padding-left: 2rem;
+  font-size: 0.18rem;
   color: azure;
-  border: 1px solid rgba(25, 186, 139, 0.17);
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.08) url("../assets/images/line.png");
-  box-shadow: 0px 0px 5px rgba(25, 108, 186, 0.6) inset;
-  margin-bottom: 1.2%;
-  padding-top: 1%;
-
-  list-style-position: inside;
-  list-style-image: url("../assets/images/icon1.png");
+  // border: 1px solid rgba(25, 186, 139, 0.17);
+  // border-radius: 5px;
+  // background: rgba(255, 255, 255, 0.08) url("../assets/images/line.png");
+  // box-shadow: 0px 0px 5px rgba(25, 108, 186, 0.6) inset;
+  margin-bottom: 0.1rem;
+  padding-top: 0.15rem;
+  // list-style-position: inside;
+  // list-style-image: url("../assets/images/icon_1.png");
 }
 
 #fashao {
@@ -2549,36 +2221,13 @@ export default {
   float: left;
   height: 100%;
 }
-.kebiaotitle1 {
-  width: 38%;
-  float: left;
-  height: 100%;
-}
-.zhiban {
-  width: 28%;
-  float: left;
-  height: 100%;
-  color: #1bb4f6;
-  font-size: 0.16rem;
-}
-.kebiaotitle {
-  height: 0.5rem;
-  text-align: center;
-  font-size: 0.2rem;
-  color: #fff;
-  text-align: center;
-  line-height: 0.5rem;
-}
-// element.style {
-//   margin-top: 35px;
-// }
 
-.ivu-tabs.ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-nav-container {
-  height: 0.4rem;
-}
-.ivu-tabs.ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-tab {
-  height: 0.4rem;
-}
+// .ivu-tabs.ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-nav-container {
+//   height: 0.4rem;
+// }
+// .ivu-tabs.ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-tab {
+//   height: 0.4rem;
+// }
 .el-table {
   height: inherit;
   width: 100% !important;
@@ -2605,19 +2254,12 @@ export default {
 .el-table th.is-leaf {
   border-bottom: 0px solid #05a4b8 !important;
 }
-/* .el-table--border td, .el-table--border th, .el-table__body-wrapper .el-table--border.is-scrolling-left~.el-table__fixed {
-  border-right: 1px solid #05a4b8!important;
-} */
+
 .el-table--border,
 .el-table--group {
   border: 1px solid #05a4b8 !important;
 }
-/* .el-table--group::after{
-  content: '';
-  position: absolute;
-  background-color: #05a4b8!important;
-  /* z-index: 1; */
-/* } */
+
 .el-table::after {
   width: 0% !important;
   height: 0% !important;
@@ -2631,14 +2273,41 @@ export default {
   padding-left: 0 !important;
 }
 #allNum {
-  width: 5rem;
+  width: 5.5rem;
   height: 2.5rem;
   position: absolute;
 }
 #allLine {
   height: 2.5rem;
-  width: 6rem;
-  margin-left: 5rem;
+  width: 5rem;
+  margin-left: 6rem;
   position: absolute;
+}
+.el-tabs__item {
+  font-size: 180%;
+  color: transparent;
+}
+.el-tabs__item.is-active {
+  color: #00d4c7;
+}
+.el-tabs__content {
+  overflow: hidden;
+  position: relative;
+  width: 75%;
+  height: 100%;
+}
+.ivu-tabs-bar {
+  margin-bottom: 0;
+  border-bottom: 1px solid #00d4c7;
+  // width: 5.1rem;
+}
+.ivu-tabs-nav {
+  padding-left: 2rem;
+}
+.ivu-tabs-nav-container:focus .ivu-tabs-tab-focused {
+  border-color: #00d4c7 !important;
+}
+.ivu-tabs.ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-tab-active {
+  color: #00d4c7;
 }
 </style>
